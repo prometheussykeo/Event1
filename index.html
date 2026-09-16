@@ -124,6 +124,65 @@ button{font-family:inherit}
 .note-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none;display:none}
 .note-dot.has{display:block}
 
+/* ---------- calendar view ---------- */
+body[data-view="calendar"] #monthRow,
+body[data-view="calendar"] #fSort{display:none}
+
+.cal-head{display:flex;align-items:center;gap:9px;margin-bottom:13px;flex-wrap:wrap}
+.cal-nav{border:1px solid var(--hairline);background:var(--cream);color:var(--sepia);
+  width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;padding:0}
+.cal-nav:hover{border-color:var(--gold);color:var(--gold-deep)}
+.cal-title{font-family:"Source Serif 4",Georgia,serif;font-size:24px;font-weight:600;
+  color:var(--ink);min-width:178px}
+.cal-today{font:600 11px "Source Sans 3",sans-serif;letter-spacing:.08em;text-transform:uppercase;
+  background:none;border:1px solid var(--hairline);color:var(--sepia);padding:6px 11px;
+  border-radius:14px;cursor:pointer}
+.cal-today:hover{border-color:var(--gold-deep);color:var(--gold-deep)}
+.cal-count{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--sepia);margin-left:auto}
+
+.cal-wrap{overflow-x:auto}
+.cal{min-width:660px;background:var(--cream);border:1px solid var(--hairline);border-radius:2px}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--parchment2)}
+.cal-dow span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--sepia);padding:7px 8px}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);row-gap:3px;
+  border-top:1px solid var(--hairline);min-height:86px;padding-bottom:7px}
+.cal-cell{grid-row:1/-1;border-left:1px solid var(--hairline);padding:4px 7px}
+.cal-cell:first-child{border-left:none}
+.cal-cell.out{background:rgba(38,29,16,.03)}
+.cal-cell.today{background:rgba(161,37,22,.07)}
+.cal-num{font-size:11.5px;color:var(--sepia);font-variant-numeric:tabular-nums}
+.cal-cell.out .cal-num{opacity:.45}
+.cal-cell.today .cal-num{color:var(--gold-deep);font-weight:600}
+
+.cal-ev{margin:0 3px;padding:2px 7px;border-radius:9px;font:400 11.5px/1.4 "Source Sans 3",sans-serif;
+  color:#FCFAF4;background:var(--gold-deep);cursor:pointer;overflow:hidden;white-space:nowrap;
+  text-overflow:ellipsis;border:none;text-align:left;position:relative;z-index:1}
+.cal-ev:hover{filter:brightness(1.18)}
+.cal-ev[data-t=capital]{background:#7C1B0F}
+.cal-ev[data-t=impact]{background:#4A5E34}
+.cal-ev[data-t=family_office]{background:#6B4E2E}
+.cal-ev[data-t=ai]{background:#3F4E6B}
+.cal-ev[data-t=hackathons]{background:#6B4472}
+.cal-ev[data-t=candidates]{background:var(--parchment2);color:var(--sepia);
+  border:1px dashed var(--gold-soft);padding:1px 6px}
+/* a span continuing past this week loses the cap on that side */
+.cal-ev.starts{border-top-right-radius:0;border-bottom-right-radius:0;margin-right:0}
+.cal-ev.ends{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:0}
+.cal-ev.mid{border-radius:0;margin-left:0;margin-right:0}
+.cal-more{font:400 10.5px "Source Sans 3",sans-serif;color:var(--sepia);padding:1px 8px;
+  cursor:pointer;background:none;border:none;text-align:left;position:relative;z-index:1}
+.cal-more:hover{color:var(--gold-deep)}
+
+.cal-strip{background:var(--cream);border:1px solid var(--hairline);border-top:none;
+  padding:9px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cal-strip .lbl{font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--sepia);margin-right:3px}
+.cal-chip{font:400 11.5px "Source Sans 3",sans-serif;padding:2px 9px;border-radius:9px;
+  background:rgba(161,37,22,.08);color:var(--gold-deep);cursor:pointer;border:none}
+.cal-chip:hover{background:rgba(161,37,22,.17)}
+.cal-chip.dash{background:none;border:1px dashed var(--hairline);color:var(--sepia)}
+@media(max-width:620px){.cal-title{font-size:20px;min-width:150px}.cal-count{display:none}}
+
 /* ---------- planner ---------- */
 .planner{position:sticky;top:calc(var(--topbar-h,74px) + 14px);align-self:start;display:flex;
   flex-direction:column;gap:18px;max-height:calc(100vh - var(--topbar-h,74px) - 28px);
@@ -207,6 +266,10 @@ footer{padding:26px 20px 40px;text-align:center;font-size:10.5px;letter-spacing:
 <div class="rail">
   <div class="rail-row">
     <input type="search" id="q" placeholder="Search events, cities, organisers…" aria-label="Search" hidden>
+    <div class="chips" id="viewChips" role="group" aria-label="View">
+      <button class="chip on" data-v="list" id="vList">List</button>
+      <button class="chip" data-v="calendar" id="vCal">Calendar</button>
+    </div>
     <select id="fSort" aria-label="Sort"><option value="date">By date</option><option value="name">By name</option><option value="tier">By tier</option></select>
     <label class="tgl"><input type="checkbox" id="tCand" checked>Scouted</label>
     <label class="tgl"><input type="checkbox" id="tDrop">Dropped</label>
@@ -254,7 +317,7 @@ footer{padding:26px 20px 40px;text-align:center;font-size:10.5px;letter-spacing:
       <button class="chip cgclear" hidden title="Clear this filter">×</button>
     </div>
   </div>
-  <div class="rail-row">
+  <div class="rail-row" id="monthRow">
     <span class="flabel">Month</span>
     <div class="chips chipgrp" data-grp="month" id="monthChips" role="group" aria-label="Months — combine several">
       <button class="chip on" data-v="" id="moAll">All</button>
@@ -337,6 +400,121 @@ function sortKey(ev){
   return ev.dates_start||(ev.typical_month?('2027-'+String(ev.typical_month).padStart(2,'0')+'-00~'):'9999')+ev.name;
 }
 
+
+/* ---------- calendar view ---------- */
+// Month grid with real date spans: a three-day conference reads as a three-day bar.
+const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MONTHS_FULL=['January','February','March','April','May','June','July',
+                   'August','September','October','November','December'];
+// Programmes running for months (rolling hackathons, application windows) would
+// carpet every week and bury the actual conferences, so they get their own strip.
+const LONG_SPAN=14, MAXLANES=4;
+let VIEW='list', calY, calM;
+const calExpanded=new Set();
+(function(){const n=new Date();calY=n.getFullYear();calM=n.getMonth();})();
+
+const ymd=v=>{const a=String(v).split('-');return new Date(+a[0],+a[1]-1,+a[2]);};
+const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+const diffDays=(a,b)=>Math.round((b-a)/864e5);
+const dayKey=d=>d.getFullYear()*1e4+(d.getMonth()+1)*100+d.getDate();
+
+function calendarHTML(rows){
+  const first=new Date(calY,calM,1), last=new Date(calY,calM+1,0);
+  const lead=(first.getDay()+6)%7;                 // Monday-first weeks
+  const gridStart=addDays(first,-lead);
+  const weeks=Math.ceil((lead+last.getDate())/7);
+  const gridEnd=addDays(gridStart,weeks*7-1);
+  const todayK=dayKey(new Date());
+
+  const dated=[],longRun=[],expected=[];
+  for(const ev of rows){
+    if(ev.dates_start){
+      const a=ymd(ev.dates_start), b=ev.dates_end?ymd(ev.dates_end):a;
+      if(b<gridStart||a>gridEnd)continue;
+      (diffDays(a,b)+1>LONG_SPAN?longRun:dated).push({ev,a,b});
+    }else if(ev.typical_month&&+ev.typical_month===calM+1){
+      expected.push(ev);
+    }
+  }
+
+  let h='<div class="cal-head">'+
+    '<button class="cal-nav" id="calPrev" aria-label="Previous month">‹</button>'+
+    '<button class="cal-nav" id="calNext" aria-label="Next month">›</button>'+
+    '<span class="cal-title">'+MONTHS_FULL[calM]+' '+calY+'</span>'+
+    '<button class="cal-today" id="calToday">Today</button>'+
+    '<span class="cal-count">'+dated.length+' dated · '+longRun.length+
+      ' running · '+expected.length+' expected</span></div>';
+
+  h+='<div class="cal-wrap"><div class="cal"><div class="cal-dow">'+
+     DOW.map(d=>'<span>'+d+'</span>').join('')+'</div>';
+
+  for(let w=0;w<weeks;w++){
+    const ws=addDays(gridStart,w*7), we=addDays(ws,6);
+    let cells='';
+    for(let i=0;i<7;i++){
+      const d=addDays(ws,i);
+      cells+='<div class="cal-cell'+(d.getMonth()!==calM?' out':'')+
+        (dayKey(d)===todayK?' today':'')+'" style="grid-column:'+(i+1)+
+        '"><div class="cal-num">'+d.getDate()+'</div></div>';
+    }
+    const segs=[];
+    for(const it of dated){
+      if(it.b<ws||it.a>we)continue;
+      segs.push({it,sc:Math.max(0,diffDays(ws,it.a)),ec:Math.min(6,diffDays(ws,it.b)),
+                 opens:it.a>=ws,closes:it.b<=we});
+    }
+    // longest bars first, so they take the top lanes and the week reads cleanly
+    segs.sort((x,y)=>x.sc-y.sc||(y.ec-y.sc)-(x.ec-x.sc)||x.it.ev.name.localeCompare(y.it.ev.name));
+    const open=calExpanded.has(calY+'-'+calM+'-'+w), cap=open?99:MAXLANES;
+    const lanes=[],over=[];
+    for(const sg of segs){
+      let put=false;
+      for(let L=0;L<lanes.length;L++){
+        if(lanes[L]<sg.sc){lanes[L]=sg.ec;sg.lane=L;put=true;break;}
+      }
+      if(!put){
+        if(lanes.length<cap){lanes.push(sg.ec);sg.lane=lanes.length-1;}
+        else over.push(sg);
+      }
+    }
+    let bars='';
+    for(const sg of segs){
+      if(sg.lane===undefined)continue;
+      const ev=sg.it.ev;
+      const edge=sg.opens&&sg.closes?'':(sg.opens?' starts':(sg.closes?' ends':' mid'));
+      bars+='<button class="cal-ev'+edge+'" data-t="'+esc(ev.theme)+'" data-open="'+ev.id+
+        '" style="grid-column:'+(sg.sc+1)+'/'+(sg.ec+2)+';grid-row:'+(sg.lane+2)+'" title="'+
+        esc(ev.name+' — '+fmtDates(ev)+(ev.city?' · '+ev.city:''))+'">'+
+        (sg.opens?'':'← ')+esc(ev.name)+'</button>';
+    }
+    if(over.length){
+      bars+='<button class="cal-more" style="grid-column:1/8;grid-row:'+(lanes.length+2)+
+        '" data-more="'+w+'">+'+over.length+' more this week</button>';
+    }
+    // -1 only reaches the end of the EXPLICIT grid, so the day cells need their row
+    // count declared up front or they stop short of the bars stacked beneath them.
+    const laneN=Math.max(lanes.length+(over.length?1:0),1);
+    h+='<div class="cal-week" style="grid-template-rows:22px repeat('+laneN+
+       ',minmax(0,auto))">'+cells+bars+'</div>';
+  }
+  h+='</div></div>';
+
+  if(longRun.length){
+    h+='<div class="cal-strip"><span class="lbl">Running through</span>'+
+      longRun.map(it=>'<button class="cal-chip" data-open="'+it.ev.id+'">'+esc(it.ev.name)+
+        ' · '+esc(fmtDates(it.ev))+'</button>').join('')+'</div>';
+  }
+  if(expected.length){
+    h+='<div class="cal-strip"><span class="lbl">Expected, dates tbc</span>'+
+      expected.map(ev=>'<button class="cal-chip dash" data-open="'+ev.id+'">'+
+        esc(ev.name)+'</button>').join('')+'</div>';
+  }
+  if(!dated.length&&!longRun.length&&!expected.length){
+    h+='<div class="empty">Nothing in this month under the current filters.</div>';
+  }
+  return h;
+}
+
 /* ---------- render list ---------- */
 const SEL={theme:new Set(),region:new Set(),month:new Set(),access:new Set(),ticket:new Set()};
 function normAccess(ev){const a=String(ev.access||'').toLowerCase();
@@ -394,6 +572,11 @@ function cardHTML(ev){
 }
 function render(){
   const rows=currentFilter(),sort=$('#fSort').value;
+  if(VIEW==='calendar'){
+    $('#list').innerHTML=calendarHTML(rows);
+    $('#countLine').textContent=rows.length+' of '+EVENTS.length;
+    updateChips();renderPlanner();renderHero();return;
+  }
   if(sort==='name')rows.sort((a,b)=>a.name.localeCompare(b.name));
   else if(sort==='tier')rows.sort((a,b)=>(a.tier||9)-(b.tier||9)||sortKey(a).localeCompare(sortKey(b)));
   else rows.sort((a,b)=>sortKey(a).localeCompare(sortKey(b)));
@@ -547,6 +730,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
 
 /* ---------- events (delegated) ---------- */
 document.addEventListener('click',e=>{
+  const nav=e.target.closest('#calPrev,#calNext,#calToday,[data-more]');
+  if(nav){
+    if(nav.id==='calPrev'){if(--calM<0){calM=11;calY--;}calExpanded.clear();}
+    else if(nav.id==='calNext'){if(++calM>11){calM=0;calY++;}calExpanded.clear();}
+    else if(nav.id==='calToday'){const n=new Date();calY=n.getFullYear();calM=n.getMonth();calExpanded.clear();}
+    else calExpanded.add(calY+'-'+calM+'-'+nav.dataset.more);
+    render();return;
+  }
   const b=e.target.closest('[data-act]');
   if(b){toggleStatus(b.dataset.id,b.dataset.act);return;}
   const r=e.target.closest('[data-rem]');
@@ -572,6 +763,15 @@ function updateChips(){
 }
 document.querySelector('.rail').addEventListener('click',e=>{
   const c=e.target.closest('.chip');if(!c)return;
+  const vg=c.closest('#viewChips');
+  if(vg){
+    VIEW=c.dataset.v;
+    document.body.dataset.view=VIEW;
+    // the Month chips and the calendar's own navigation would fight each other
+    if(VIEW==='calendar')SEL.month.clear();
+    for(const el of vg.querySelectorAll('.chip'))el.classList.toggle('on',el.dataset.v===VIEW);
+    render();return;
+  }
   if(c.id==='clearAll'){
     for(const s of Object.values(SEL))s.clear();
     $('#q').value='';$('#tCand').checked=true;$('#tDrop').checked=false;
