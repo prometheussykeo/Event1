@@ -28,9 +28,13 @@ button{font-family:inherit}
 
 /* ---------- ambient rivers layer ---------- */
 #rivers{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
-.rail,.main,footer{position:relative;z-index:1}
+.main,footer{position:relative;z-index:1}
 /* ---------- pinned header ---------- */
-.hero{position:sticky;top:0;z-index:35;background:rgba(247,241,229,.92);backdrop-filter:blur(3px);
+/* Header + filters pin together as one bar. Capped so a tall chip stack can
+   never eat the viewport; it scrolls internally instead. */
+.topbar{position:sticky;top:0;z-index:40;background:var(--parchment);
+  max-height:78vh;overflow-y:auto;box-shadow:0 1px 0 var(--hairline)}
+.hero{position:relative;background:rgba(247,241,229,.92);backdrop-filter:blur(3px);
   overflow:hidden;border-bottom:1px solid var(--hairline)}
 .hero-inner{position:relative;z-index:2;max-width:1420px;margin:0 auto;padding:12px 20px;
   display:flex;gap:8px 18px;align-items:baseline;flex-wrap:wrap;pointer-events:none}
@@ -121,7 +125,9 @@ button{font-family:inherit}
 .note-dot.has{display:block}
 
 /* ---------- planner ---------- */
-.planner{position:sticky;top:74px;align-self:start;display:flex;flex-direction:column;gap:18px;max-height:calc(100vh - 96px);overflow:auto;padding-bottom:8px}
+.planner{position:sticky;top:calc(var(--topbar-h,74px) + 14px);align-self:start;display:flex;
+  flex-direction:column;gap:18px;max-height:calc(100vh - var(--topbar-h,74px) - 28px);
+  overflow:auto;padding-bottom:8px}
 .pbox{background:var(--cream);border:1px solid var(--gold-soft);border-radius:3px;padding:14px 14px 12px;position:relative}
 .pbox::before{content:"";position:absolute;inset:4px;border:1px solid rgba(161,37,22,.25);border-radius:2px;pointer-events:none}
 .pbox.over{box-shadow:0 0 0 2px var(--gold),0 6px 24px rgba(161,37,22,.25)}
@@ -182,6 +188,7 @@ footer{padding:26px 20px 40px;text-align:center;font-size:10.5px;letter-spacing:
   .planner{position:static;max-height:none;order:-1;flex-direction:row;flex-wrap:wrap}
   .pbox{flex:1 1 260px}
   .p-list{max-height:180px;overflow:auto}
+  .topbar{max-height:62vh}
 }
 @media(prefers-reduced-motion:reduce){
   .card,.card::before,.drawer,.scrim{transition:none}
@@ -189,6 +196,7 @@ footer{padding:26px 20px 40px;text-align:center;font-size:10.5px;letter-spacing:
 </style>
 
 <canvas id="rivers"></canvas>
+<div class="topbar" id="topbar">
 <div class="hero" id="hero">
   <div class="hero-inner">
     <h1 class="wordmark">The Conference <em>Explorer.</em></h1>
@@ -252,6 +260,7 @@ footer{padding:26px 20px 40px;text-align:center;font-size:10.5px;letter-spacing:
       <button class="chip on" data-v="" id="moAll">All</button>
     </div>
   </div>
+</div>
 </div>
 
 <div class="main">
@@ -591,6 +600,18 @@ for(const box of document.querySelectorAll('.pbox')){
     if(id&&byId[id])setPlanner(id,{status:box.dataset.zone});
   });
 }
+
+/* ---------- keep the planner clear of the pinned bar ---------- */
+(function(){
+  const bar=$('#topbar');
+  if(!bar)return;
+  const measure=()=>document.documentElement.style.setProperty(
+    '--topbar-h', bar.getBoundingClientRect().height+'px');
+  measure();
+  addEventListener('resize',measure,{passive:true});
+  // The bar grows and shrinks as chip rows wrap or the stats line changes.
+  if(window.ResizeObserver)new ResizeObserver(measure).observe(bar);
+})();
 
 /* ---------- ambient ink rivers (full page, follows the cursor) ---------- */
 (function(){
